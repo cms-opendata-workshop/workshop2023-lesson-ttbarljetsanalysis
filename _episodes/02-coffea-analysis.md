@@ -442,7 +442,7 @@ plt.show()
 ~~~
 {: .language-python}
 
-![](../fig/thad.png)
+![](../assets/img/thad.png)
 
 ## Coffea Processors
 
@@ -717,6 +717,6 @@ python coffeaAnalysis_ttbarljets.py
 > {: .languagle-bash}
 {: .challenge}
 
-![](../fig/finalplot_ttbar.png){:width="60%"}
+![](../assets/img/finalplot_ttbar.png){:width="60%"}
 
 {% include links.md %}
