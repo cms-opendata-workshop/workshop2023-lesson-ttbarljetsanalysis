@@ -17,7 +17,12 @@ keypoints:
 - "Coffea processors encapsulate an analysis so it becomes deployment-neutral"
 ---
 
+STOP THE JUPYTER NOTEBOOK FROM BEFORE
+
+IF YOU STOPPED YOUR DOCKER CONTAINER, HERE'S HOW TO START IT BACK UP. 
+
 > ## Prerequisites
+
 >
 > For this episode please go to your `python` Docker container and clone the repository for this exercise:
 >
