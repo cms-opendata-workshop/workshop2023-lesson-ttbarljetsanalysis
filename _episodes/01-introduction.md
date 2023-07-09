@@ -28,11 +28,12 @@ for the production of top-quark / anti-top-quark pairs in proton-proton collisio
 we measured the probability that a top-quark and an anti-top quark pair are produced when protons are collided
 at a center-of-mass energy of 13 TeV. 
 
-A set of summary slides are provided HEREEEEEEEEEEEEEEEEEEEEEEEEE and you should make sure you go through them in full. 
+A set of summary slides are provided LINK_TO_BE_ADDED and you should make sure you go through them in full. 
 
 ![](../assets/img/ttbar_diagram.png){:width="50%"}.
 
-In this simplified analysis we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.
+To go into a bit more detail (this will make sense if you go through the aforementioned slides)< 
+in this simplified analysis we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.
 The data are produced in proton-proton collisions at $$\sqrt{s}$$ = 13 TeV at the beginning of Run 2 of the LHC. We will be examining the lepton+jets final state
 $$
 t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}
@@ -42,7 +43,6 @@ which is characterized by one lepton (here we look at electrons and muons only),
 
 
 ## Coding (python) introduction
-
 
 We will attempt to use tools that are built on modern, powerful and efficient python ecosystems.  In particular, we will use the **Columnar Object Framework For Effective Analysis** ([Coffea](https://coffeateam.github.io/coffea/)), which will provide us with *basic tools and wrappers for enabling not-too-alien syntax when running columnar Collider HEP analysis*.
 
@@ -118,7 +118,7 @@ If it works you'll see something in your browser similar to the following image!
 > ![](../assets/img/juplab_dashboard.png)
 {: .callout}
 
-**Launch Jupyter Lab**
+**Start a new Jupyter notebook**
 
 The top icon (under **Notebook**) says *Python 3 (ipykernel)*. 
 Click on this icon. This should launch a new Jupyter notebook!

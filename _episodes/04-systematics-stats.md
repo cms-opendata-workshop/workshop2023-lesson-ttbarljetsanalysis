@@ -30,7 +30,7 @@ Let's explore the different ways in which one can introduce the estimation of sy
 Before, we begin, note that a multidimensional array for histograms has been booked:
 
 ~~~
-#--------------------
+    #--------------------
     def __init__(self):
     #--------------------
         num_bins = 25
@@ -54,7 +54,7 @@ Before, we begin, note that a multidimensional array for histograms has been boo
 The different **processes** (associated with our main datasets for data, signal and backgrounds) and **variations** (also datasets but variations of the *nominal* one) are passed to the Processor:
 
 ~~~
- #-------------------------
+    #-------------------------
     def process(self, events):
     #-------------------------
         histogram = self.hist.copy()
@@ -69,7 +69,7 @@ The different **processes** (associated with our main datasets for data, signal 
 Monte Carlo simulations are normalized to the actual luminosity.  Cross sections and numbers of total events for the different samples are also passed to the Processor.  They are handled by the `utils.py` program, as you may remember:
 
 ~~~
-# normalization for MC
+        # normalization for MC
         x_sec = events.metadata["xsec"]
         nevts_total = events.metadata["nevts"]
         # This lumi number was obtained with
@@ -86,7 +86,7 @@ Monte Carlo simulations are normalized to the actual luminosity.  Cross sections
 There are several ways in which one can introduce systematic variations.  A built-in option provided by Coffea, `add_systematics`, is the easiest.  Here an example of a made up variation for the scale of the `wjets` contribution:
 
 ~~~
-#### systematics
+        #### systematics
         # example of a simple flat weight variation, using the coffea nanoevents systematics feature
         # https://github.com/CoffeaTeam/coffea/blob/20a7e749eea3b8de4880088d2f0e43f6ef9d7993/coffea/nanoevents/methods/base.py#L84
         # Help on method add_systematic in module coffea.nanoevents.methods.base:
@@ -100,7 +100,7 @@ There are several ways in which one can introduce systematic variations.  A buil
 We do have per-jet variations in our ntuples now, but by the time this AGC demonstrator was written we did not.  This is an example of how to add variatinos for jet energy scale and resolution with a per-event *number*.  To make use of the information we have without varying the code too much, we test a silly average for the jet energy scale:
 
 ~~~
-# example on how to get jet energy scale / resolution systematics
+        # example on how to get jet energy scale / resolution systematics
         # need to adjust schema to instead use coffea add_systematic feature, especially for ServiceX
         # cannot attach pT variations to events.jet, so attach to events directly
         # and subsequently scale pT by these scale factors
@@ -211,19 +211,6 @@ Essentially:
 >
 {: .testimonial}
 
-Let's start by importing the necessary modules (if you haven't already), most importantly `cabinetry`:
-~~~
-import logging
-import cabinetry
-~~~
-{: .language-python}
-
-If `cabinetry` is not installed:
-~~~
-pip install cabinetry
-~~~
-{: .language-bash}
-
 ### Histograms
 
 Let's quickly inspect our histograms in the `histograms.root` file by running ROOT and opening
@@ -258,7 +245,7 @@ root [1] TBrowser b
 ~~~
 {: .output}
 
-Click on one of the histogram titles on the left ofr `4j1b` to view it:
+Click on one of the histogram titles on the left for `4j1b` to view it:
 
 ![](../assets/img/4j1b_ttbar.png){:width="50%"}
 
@@ -268,6 +255,24 @@ Click on another for `4j2b`:
 
 Recall that our observable for the `4j1b` control region is the scalar sum of jet transverse momentum, $$ H_{T} $$ and our observable for the `4j2b` signal region is the mass of b-jet system $$ m_{b_{jj}} $$.
 
+### Start up a Jupyter notebook
+
+Follow the steps from the previous episode to fire up Jupyter Lab, create a Jupyter notebook, 
+and name it `ttbar_inference.ipynb`.
+
+Let's start by importing the necessary modules (if you haven't already), most importantly `cabinetry`:
+~~~
+import logging
+import cabinetry
+~~~
+{: .language-python}
+
+If `cabinetry` is not installed:
+~~~
+pip install cabinetry
+~~~
+{: .language-bash}
+
 ### Cabinetry workspace
 
 A statistical model can be define in a declarative way using cabinetry, capturing the 
@@ -275,7 +280,7 @@ $$ \mathrm{region \otimes sample \otimes systematic} $$ structure.
 
 General settings `General:`, list of phase space regions such as signal and control regions `Regions:`, list of samples (MC and data) `Samples:`, list of systematic uncertainties `Systematics:`, and a list of normalization factors `NormFactors:`.
 
-Let's have a look at each of the parts of the the configuration file:
+Let's have a look at each of the parts of the the configuration file, `workshop2022-lesson-ttbarljetsanalysis-payload$/cabinetry_config.yml`:
 
 #### General
 
@@ -366,11 +371,16 @@ NormFactors:
 Let's load the `cabinetry` configuration file and combine the histograms into a `pyhf` workspace which we will save:
 ~~~
 config = cabinetry.configuration.load("cabinetry_config.yml")
+
 cabinetry.templates.collect(config)
+
 ws = cabinetry.workspace.build(config)
+
 cabinetry.workspace.save(ws, "workspace.json")
 ~~~
 {: .language-python}
+
+You may see a number of warnings, but you can ignore them. 
 
 `pyhf` can be run on the command line to inspect the workspace:
 ~~~
@@ -378,7 +388,16 @@ pyhf inspect workspace
 ~~~
 {: .language-bash}
 
-which outputs the following:
+Or you can run it inside of your Jupyter notebook by typing
+~~~
+!pyhf inspect workspace.json
+~~~
+{: .language-python} 
+
+where the `!` exclamation point tells Jupyter to run the command as a `bash` command and return the output. 
+
+
+Either of these commands outputs the following:
 ~~~
                  Summary       
             ------------------  
@@ -428,6 +447,7 @@ W+jets scale variations  constrained_by_normal   histosys,normsys
 Now we perform our maximum likelihood fit
 ~~~
 model, data = cabinetry.model_utils.model_and_data(ws)
+
 fit_results = cabinetry.fit.fit(model, data)
 ~~~
 {: .language-python}
@@ -438,10 +458,14 @@ and visualize the pulls of parameters in the fit:
 pull_fig = cabinetry.visualize.pulls(
     fit_results, exclude="ttbar_norm", close_figure=True, save_figure=True
 )
+
+pull_fig
 ~~~
 {: .language-python}
 
 ![](../assets/img/pulls.png){:width="50%"}
+
+*Your plot might look different as the order of the systematics might be different, though the values should be the same.*
 
 
 What are pulls? For our nuisance parameters in the fit the pull is defined as $$ (\hat{\theta} - \theta_{0}) / \Delta\theta $$, which is the
@@ -456,11 +480,21 @@ Note that the figures produced by running the script or your commands are to be 
 What does the model look like before and after the fit? We can visualize each with the following
 code:
 ~~~
+# Before the fit
+
 model_prediction = cabinetry.model_utils.prediction(model)
-figs = cabinetry.visualize.data_mc(model_prediction, data, close_figure=True)
+
+figs = cabinetry.visualize.data_mc(model_prediction, data, close_figure=False)
+
+~~~
+{: .language-python}
+
+~~~
+# After the fit
 
 model_prediction_postfit = cabinetry.model_utils.prediction(model, fit_results=fit_results)
-figs = cabinetry.visualize.data_mc(model_prediction_postfit, data, close_figure=True)
+
+figs = cabinetry.visualize.data_mc(model_prediction_postfit, data, close_figure=False)
 ~~~
 {: .language-python}
 
@@ -471,6 +505,7 @@ We can see that there is very good post-fit agreement:
 Finally, what's the $$ t\bar{t} $$ cross section (for our pseudodata) divided by the Standard Model prediction?
 ~~~
 poi_index = model.config.poi_index
+
 print(f"\nfit result for ttbar_norm: {fit_results.bestfit[poi_index]:.3f} +/- {fit_results.uncertainty[poi_index]:.3f}")
 ~~~
 {: .language-python}

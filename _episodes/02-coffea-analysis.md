@@ -17,30 +17,121 @@ keypoints:
 - "Coffea processors encapsulate an analysis so it becomes deployment-neutral"
 ---
 
-STOP THE JUPYTER NOTEBOOK FROM BEFORE
+## Getting things prepared for this episode
 
-IF YOU STOPPED YOUR DOCKER CONTAINER, HERE'S HOW TO START IT BACK UP. 
+I'm going to assume that you have stopped the Docker container from the last episode. If you have
+not, let's walk through how to start things up and add one more piece of data. 
 
-> ## Prerequisites
-
+> ## Type out the following commands for this episode!
+> For this next section, you'll be asked to type out the provided commands in a [Jupyter notebook](https://jupyter.org/), a
+> popular development environment that allows you to use python in an interactive way.
 >
-> For this episode please go to your `python` Docker container and clone the repository for this exercise:
->
+> *Please enter in these commands yourself for this episode.*
+{: .callout}
+
+
+To create or run the notebooks used in this episode, we will
+* Start the python docker container
+    * We assume that we have installed the necessary modules from the previous episode (e.g. `coffea`)
+* Clone a repository of some helpful utilities for this episode.
+* Launch [Jupyter Lab](https://jupyterlab.readthedocs.io/en/latest/).
+* Create a new Jupyter Notebook for this episode.
+
+**Start Docker**
+If you have already successfully installed and run the Docker example with python tools, then you need only execute the following command.
+~~~
+docker start -i my_python  #give the name of your container
+~~~
+{: .language-bash}
+
+ If this doesn't work, return to the [*python tools Docker container*](https://cms-opendata-workshop.github.io/workshop2023-lesson-docker/03-docker-for-cms-opendata/index.html#python-tools-container) lesson to work through how to start the container.
+
+
+
+**Clone a new repository**
+
+In  your python Docker container clone the repository for this exercise and go into the cloned directory.
+~~~
+git clone https://github.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload.git
+
+cd workshop2022-lesson-ttbarljetsanalysis-payload
+~~~
+{: .language-bash}
+
+**Launch Jupyter Lab**
+In your docker python container, type the following.
+
 > ~~~
-> git clone https://github.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload.git
->
-> cd workshop2022-lesson-ttbarljetsanalysis-payload
+> jupyter-lab --ip=0.0.0.0 --no-browser
 > ~~~
 > {: .language-bash}
->
-{: .prereq}
+
+Take note of the last two lines that start with `http://`. Start up a
+browser locally on your laptop or desktop (not from the Docker container). Copy one of those
+URLs and paste it into the browser. If the first URL doesn't work, try the other.
+
+**Start a new Jupyter notebook**
+
+The top icon (under **Notebook**) says *Python 3 (ipykernel)*.
+Click on this icon. This should launch a new Jupyter notebook!
+
+In this Jupyter Lab environment, click on **File** (in the top right) and then from the dropdown
+menu select **Rename Notebook...**. You can call this notebook whatever you like but I have
+called mine `ttbar_analysis.ipynb`.
+
+For the remainder of this lesson, you'll be typing or cutting-and-pasting the commands you see here in the
+**Python** sections into
+the Jupyter Notebook. To run those commands after you have typed them, you can press the little **Play** icon (right-pointing triangle)
+or type **Shift + Enter** (to run the cell and advance) or **Ctrl + Enter** (to run the cell and *not* advance).
+Whichever you prefer.
+
+> ## *Optional!* Using ipython
+> If, for some reason, you don't want to use Jupyter, you can launch interactive python just by typing
+> `ipython` in Docker Container (and not the `jupyter-lab` command) and then entering the python
+> commands there.
+{: .callout}
+
+
+## The analysis
 
 
 This episode is a recast of the [analysis demo](https://github.com/iris-hep/analysis-grand-challenge/blob/main/analyses/cms-open-data-ttbar/coffea.ipynb) presented by Alexander Held at the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/event/1126109/). Our attempt is to make it more understandable by paying a bit more attention to the details.  **Note that this is work in progress** and it will be refined in the future, perhaps using better consolidated ntuples (nanoAOD-like).
 
 ## Datasets and pre-selection
 
-As it was mentioned in the previous episode, we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.  The lepton+jets final state $$t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}$$ is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
+As it was mentioned in the previous episode, we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.  
+The $$t\bar{t}$$ pair is identified in a particular decay mode referred to as the *lepton+jets final state*.
+
+$$
+\begin{eqnarray}
+pp &\rightarrow& t\bar{t}\\
+t\bar{t} &\rightarrow& (bW^{+})(\bar{b}W_{-}) \\
+& & W^{+} \rightarrow q\bar{q} \\
+& & W_{-} \rightarrow l^{-}\bar{\nu_{l}}
+\end{eqnarray}
+$$
+
+Both top-quarks decay to a $$b$$-quark and a $$W$$ boson. The $$b$$-quarks quickly hadronize, forming mesons which live long enough to travel 
+hundreds of microns before decaying, allowing our algorithms to {\it tag} these jets as originating from $$b$$-quarks. This
+is known as b-tagging. 
+
+We then require that 1 of the $$W$$ bosons decays to two quarks which manifest as 2 jets in the detector. We require
+that the other $$W$$ boson decays to a charged lepton and a neutrino. $$\tau$$ leptons decay rather quickly 
+so we look for events where the charged lepton is an electron or neutrino. The neutrino is not detected
+but contributes to missing transverse energy.
+
+So to summarize, our final state is characterized by one charged lepton (an electron or muon), significant missing transverse energy, and four jets, two of which are identified as b-jets.
+
+$$t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}$$ 
+
+Of course, this final state can be produced by other physics processes as well! To perform any analysis, 
+we usually need the following:
+
+* The collision data (from the actual detector)
+* Simulated datasets (Monte Carlo or MC)
+    * Simulations of our signal process
+    * Simulations of our signal process, varied under certain assumptions to estimate systematic uncertainties
+    * Simulations of background process which could mimic the signal
 
 For this analysis we will use the following datasets:
 
@@ -61,19 +152,42 @@ For this analysis we will use the following datasets:
 
 The **nominal** variation samples are the regular samples used in the analysis while samples corresonding to other variations are used for estimating systematic uncertainties.  This will be discussed in the last episode.
 
-As you can see, several of these datasets are **quite large (TB in size)**, therefore we need to skim them.  Also, as you were able to see previously, running CMSSW EDAnalyzers over these data (with the POET code, for instance) could be quite **computing intensive**.  One could also estimate the time it would take to run over all the datasets we need using a single computer. To be efficient, you will need a computer cluster, but we will leave that for the Cloud Computing lesson. Fortunately, **we have prepared these skims already at CERN**, using CERN/CMS computing infrastructure. The *skimmed* files we will be using were obtained in essentially the same POET way, except that **we applied some *trigger* filtering and some *pre-selection* requirements**.
+As you can see, several of these datasets are **quite large (TB in size)**, therefore we need to skim them.  Also, as you were able to see previously, running CMSSW EDAnalyzers over these data (with the POET code, for instance) could be quite **computing intensive**.  One could also estimate the time it would take to run over all the datasets we need using a single computer. To be efficient, you will need a computer cluster, but we will leave that for the Cloud Computing lesson. 
+
+Fortunately, **we have prepared these skims already at CERN**, using CERN/CMS computing infrastructure. The *skimmed* files we will be using were obtained in essentially the same POET way, except that **we applied some *trigger* filtering and some *pre-selection* requirements**.
 
 We explicitly required:
 
 * That the events *fired* at least one of these **triggers**: `HLT_Ele22_eta2p1_WPLoose_Gsf`, `HLT_IsoMu20_v`, `HLT_IsoTkMu20_v`.  We assume these triggers were unprescaled, but you know now, one should really check (or ask!)
+    * You might be able to infer from the names that these triggers are designed to record events with an electron (`XXX_Ele_XXX`) or a muon (`XXX_Mu_XXX`)
 * That the event contains either **at least one tight electron** with $$p_{T} > 26$$ and $$\lvert\eta\rvert<2.1$$ **or at least one tight muon** with $$p_{T} > 26$$ and $$\lvert\eta\rvert<2.1$$.
+    * When we use the word **tight** in this context, it is jargon internal to CMS that just specifies how pure we are trying to make the sample. A **tight** selection criteria would be quite pure and have fewer false positives than a **medium** or **loose** selection which might retain more ttrue muons or electrons, but also have more false postives. 
 
 A json file called `ntuples.json` was created in order to keep track of these files and their metadata.  You can find this file in your copy of the `workshop2022-lesson-ttbarljetsanalysis-payload` repository. 
+
+> ## Explore!
+> If you'd like to see what is in `ntuples.json`, you can use the file browser in Jupyter-lab, located on the left-hand side of the window. 
+> 
+> First select `workshop2022-lesson-ttbarljetsanalysis-payload/` and then `ntuples.json`. Click on the different names
+> to expand them to see more information about how many files were used and how many events were in those files. 
+{: .callout}
+
+> ## Challenge!
+> How many events were in the `ttbar` `nominal` sample?
+> 
+> > ## Solution
+> >  20620375
+> {: .solution}
+{: .challenge}
+
+
 
 
 ## Building the basic analysis selection
 
-Here we will attempt to build the histogram of a physical observable by implementing the physics object selection requirements that were used by the CMS analysts, who performed this analysis back in 2015.  For understanding the basics of the analysis implementation, **we will first attempt the analysis over just one collissions dataset (just one small file)**.  Then, we will **encapsulate** our analysis in a Coffea *processor* and run it for all datasets: collisions (wich we will call just *data*), signal and background.
+Here we will attempt to build the histogram of a physical observable by implementing the physics object selection requirements that were used by the CMS analysts, who performed this analysis back in 2015.  
+
+For understanding the basics of the analysis implementation, **we will first attempt the analysis over just one collisions dataset (just one small file)**.  Then, we will **encapsulate** our analysis in a Coffea *processor* and run it for all datasets: collisions (wich we will call just *data*), signal and background.
 
 Here is a summary of the **selection requirements** used in the [original CMS analysis](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf):
 
@@ -81,8 +195,10 @@ Here is a summary of the **selection requirements** used in the [original CMS an
 >
 > Exactly one muon
 >   * $$p_T$$ > 30 GeV, $$\lvert\eta\rvert<2.1$$, tight ID
->   * relIso < 0.15 ([corrected for pile-up contamination](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/MuonAnalyzer.cc#L251))
+>   * relIso < 0.15 ([corrected for pile-up contamination](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/MuonAnalyzer.cc#L251)). 
+>       * This means that the muon is fairly isolated from the jets, a good requirement since muons can also come from jets or even other proton-proton collisions...not the type of muon we want! 
 >   * SIP3D < 4
+>       * SIP3D refers for the Significance on the Impact Parameter in 3D, which tells us how likely it is that the lepton came from the primary proton-proton interaction point, rather than some a different proton-proton collision.
 >
 {: .checklist}
 
@@ -100,15 +216,17 @@ Here is a summary of the **selection requirements** used in the [original CMS an
 >   * Loose jet ID
 >   * $$p_T$$ > 30 GeV, $$\lvert\eta\rvert<2.4$$, [Fall15_25nsV2](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/python/poet_cfg.py#L148)
 >   * Jets identified as b-jets if [CSV discriminator value](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/JetAnalyzer.cc#L410) > 0.8 (medium working point)
+>       * **CSV** refers to *Combined Secondary Vertex*, an algorithm used to identify $$b$$-jets that travel some distance from the interaction point. The algorith tries to combine some number of charged tracks and see if they originate from a point in space (a vertext) that is not the primary interaction point (a secondary vertex). 
 >
 {: .checklist}
 
 >
-> If for some reason you need to start over, take into account that the file `coffeaAnalysis_basics.py`, in your copy of the exercise repository, contains all the relevant commands needed to complete the basic analysis part that is shown in this section.
+> If for some reason you need to start over as you are following along, take into account that the file `coffeaAnalysis_basics.py`, in your copy of the exercise repository, contains all the relevant commands needed to complete the basic analysis part that is shown in this section.
 >
 {: .testimonial}
 
-Also remember, if you want to do work in a jupyter notebook you can start one with `jupyter-lab --ip=0.0.0.0 --no-browser` in your container.
+OK, you should have your Jupyter notebook open in your Jupyter lab running in your Docker container! 
+Type along (cut-and-paste from this episode) with me!
 
 Let'start fresh, import the needed libraries and open an example file (we include some additional libraries that will be needed):
 
@@ -121,6 +239,13 @@ import matplotlib.pyplot as plt
 import mplhep as hep
 from coffea.nanoevents import NanoEventsFactory, BaseSchema
 from agc_schema import AGCSchema
+~~~
+{: .language-python}
+
+Now, let's read in *one file* from our signal Monte Carlo sample that simulates the decay of our $$t\bar{t}$$ pair. We'll be using
+`coffea` to read everything in and using our `AGCSchema`.
+
+~~~
 events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms/derived-data/POET/23-Jul-22/RunIIFall15MiniAODv2_TT_TuneCUETP8M1_13TeV-powheg-pythia8_flat/00EFE6B3-01FE-4FBF-ADCB-2921D5903E44_flat.root', schemaclass=AGCSchema, treepath='events').events()
 ~~~
 {: .language-python}
@@ -132,56 +257,135 @@ We will **apply the selection criteria** and then **make a meaningful histogram*
 First, start by applying a $$p_{T}$$ cut for the objects of interest, namely electrons, muons and jets.  To compare, first check the number of objects in each subarray of the original collection:
 
 ~~~
-ak.num(events.electron, axis=1)
-ak.num(events.muon, axis=-1)
-ak.num(events.jet, axis=1)
+print("Electrons:")
+print(f"Number of events: {ak.num(events.electron, axis=0)}")
+print(ak.num(events.electron, axis=1))
+print()
+
+print("Muons:")
+print(f"Number of events: {ak.num(events.muon, axis=0)}")
+print(ak.num(events.muon, axis=1))
+print()
+
+print("Jets:")
+print(f"Number of events: {ak.num(events.jet, axis=0)}")
+print(ak.num(events.jet, axis=1))
 ~~~
 {: .language-python}
+
+> ## Check yourself!
+> Does this output make sense to you? Check with the instructor if it does not. 
+{: .callout}
 
 Before we go on,  let's do a quick check on the *fields* available for each of our objects of interest:
 
 ~~~
-events.electron.fields
-events.muon.fields
-events.jet.fields
+print("Electron fields:")
+print(events.electron.fields)
+print()
+
+print("Muon fields:")
+print(events.muon.fields)
+print()
+
+print("Jet fields:")
+print(events.jet.fields)
+print()
 ~~~
 {: .language-python}
 
-Now, let's apply the $$p_{T}$$ and $$\eta$$ *mask* together with the *tightness* requirement for the leptons:
+Now, let's apply the $$p_{T}$$ and $$\eta$$ *mask* together with the *tightness* requirement for the leptons, along
+with our selection criteria for the jets. To remind ourselves...
+> ## Physics requirements
+> **Muon**
+>   * $$p_T$$ > 30 GeV
+>   * $$\lvert\eta\rvert$$ < 2.1
+>   * tight ID
+>   * relIso < 0.15 ([corrected for pile-up contamination](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/MuonAnalyzer.cc#L251)). 
+>   * SIP3D < 4
+>
+> **Electron**
+>   * Exactly one electron
+>   * $$p_T$$ > 30 GeV
+>   * $$\lvert\eta\rvert$$ < 2.1
+>   * tight ID
+>   * SIP3D < 4   
+>
+> **Jet**
+>   * Require at least one jet
+>   * Loose jet ID
+>   * $$p_T$$ > 30 GeV
+>   * $$\lvert\eta\rvert$$ < 2.4
+>   * Jets identified as b-jets if [CSV discriminator value](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/JetAnalyzer.cc#L410) > 0.8 (medium working point)
+>
+{: .checklist}
 
 ~~~
 selected_electrons = events.electron[(events.electron.pt > 30) & (abs(events.electron.eta)<2.1) & (events.electron.isTight == True)]
+
 selected_muons = events.muon[(events.muon.pt > 30) & (abs(events.muon.eta)<2.1) & (events.muon.isTight == True)]
+
 selected_jets = events.jet[(events.jet.corrpt > 30) & (abs(events.jet.eta)<2.4)]
 ~~~
 {: .language-python}
 
+> ## Check yourself!
+> Can you match the python code to the physics selection criteria? Have we added all the requirements yet? 
+{: .callout}
+
 See what we got:
 
 ~~~
-ak.num(selected_electrons, axis=1)
-ak.num(selected_muons, axis=1)
-ak.num(selected_jets, axis=1)
+print("Selected objects ------------")
+
+print("Electrons:")
+print(f"Number of events: {ak.num(selected_electrons, axis=0)}")
+print(ak.num(selected_electrons, axis=1))
+print()
+
+print("Muons:")
+print(f"Number of events: {ak.num(selected_muons, axis=0)}")
+print(ak.num(selected_muons, axis=1))
+print()
+
+print("Jets:")
+print(f"Number of events: {ak.num(selected_jets, axis=0)}")
+print(ak.num(selected_jets, axis=1))
+
 ~~~
 {: .language-python}
 
 Note that the number of events are still the same, for example:
 
 ~~~
-ak.num(events.electron, axis=0)
-ak.num(selected_electrons, axis=0)
+print("Electrons before selection:")
+print(f"Number of events: {ak.num(events.electron, axis=0)}")
+print(ak.num(events.electron, axis=1))
+print()
+
+print("Electrons: after selection")
+print(f"Number of events: {ak.num(selected_electrons, axis=0)}")
+print(ak.num(selected_electrons, axis=1))
+print()
 ~~~
 {: .language-python}
 
 Also, check one particular subarray to see if the applied requirements make sense:
 
 ~~~
-events.muon.pt[4]
-events.muon.eta[4]
-events.muon.isTight[4]
-selected_muons.pt[4]
-selected_muons.eta[4]
-selected_muons.isTight[4]
+print("pt before/after")
+print(events.muon.pt[4])
+print(selected_muons.pt[4])
+print()
+
+print("eta before/after")
+print(events.muon.eta[4])
+print(selected_muons.eta[4])
+print()
+
+print("isTight before/after")
+print(events.muon.isTight[4])
+print(selected_muons.isTight[4])
 ~~~
 {: .language-python}
 
@@ -306,12 +510,17 @@ event_filters = ((ak.count(selected_electrons.pt, axis=1) + ak.count(selected_mu
 ~~~
 {: .language-python}
 
+Note that the `+` between the two masks acts as an *or*! So we are requiring at exactly 1 electron *or* 1 muon. 
+
 In order to keep the analyisis regions (we will see this later) from the original AGC demo, let's require at least four jets in our event filter:
 
 ~~~
 event_filters = event_filters & (ak.count(selected_jets.corrpt, axis=1) >= 4)
 ~~~
 {: .language-python}
+
+We are adding to our `event_filters` requirements. The ampersand `&` means that we want both the previous definition of
+`event_filters` *and* the requirement of at least 4 jets. 
 
 
 > ## **Challenge**: Require at least one b-tagged jet
@@ -325,6 +534,7 @@ event_filters = event_filters & (ak.count(selected_jets.corrpt, axis=1) >= 4)
 > > ~~~
 > > # at least one b-tagged jet ("tag" means score above threshold)
 > > B_TAG_THRESHOLD = 0.8
+> > 
 > > event_filters = event_filters & (ak.sum(selected_jets.btag >= B_TAG_THRESHOLD, axis=1) >= 1)
 > > ~~~
 > > {: .language-python}
@@ -332,7 +542,8 @@ event_filters = event_filters & (ak.count(selected_jets.corrpt, axis=1) >= 4)
 {: .challenge}
 
 
-Let's now apply the event filters:
+Let's now apply the event filters. We are applying the same `event_filters` mask to 
+the `events` as well as the physics objects.
 
 ~~~
 selected_events = events[event_filters]
@@ -350,6 +561,7 @@ Let's define a filter for this region and create such region:
 
 ~~~
 region_filter = ak.sum(selected_jets.btag > B_TAG_THRESHOLD, axis=1) >= 2
+
 selected_jets_region = selected_jets[region_filter]
 ~~~
 {: .language-python}
@@ -357,19 +569,30 @@ selected_jets_region = selected_jets[region_filter]
 Now, here is where the true power of columnar analysis and the wonderful python tools that are being developed become really evident.  Let's reconstruct the hadronic top as the *bjj* system with the largest $$p_{T}$$.  We will get ourselves an observable, which is the mass.
 
 ~~~
-trijet = ak.combinations(selected_jets_region, 3, fields=["j1", "j2", "j3"])  # trijet candidates
-trijet["p4"] = trijet.j1 + trijet.j2 + trijet.j3  # calculate four-momentum of tri-jet system
+# Use awkward to create all possible trijet candidates within events
+trijet = ak.combinations(selected_jets_region, 3, fields=["j1", "j2", "j3"])
+
+# Calculate four-momentum of tri-jet system. This is for all combinations
+# Note that we are actually adding a `p4` field.
+trijet["p4"] = trijet.j1 + trijet.j2 + trijet.j3 
+
+# Pull out the b-tag of the jet with the maxium value (most likely to be a b-tag)
 trijet["max_btag"] = np.maximum(trijet.j1.btag, np.maximum(trijet.j2.btag, trijet.j3.btag))
-trijet = trijet[trijet.max_btag > B_TAG_THRESHOLD]  # require at least one-btag in trijet candidates
+
+# Require at least one-btag in trijet candidates
+trijet = trijet[trijet.max_btag > B_TAG_THRESHOLD]
+
 # pick trijet candidate with largest pT and calculate mass of system
 trijet_mass = trijet["p4"][ak.argmax(trijet.p4.pt, axis=1, keepdims=True)].mass
+
+# Get the mass ready for plotting!
 observable = ak.flatten(trijet_mass)
 ~~~
 {: .language-python}
 
 > ## **Challenge**: Can you figure out what is happening above?
 >
-> Take some time to understand the logic of the above statements and explore the *awkward* methods used to get the ovbservable.
+> Take some time to understand the logic of the above statements and explore the *awkward* methods used to get the observable.
 >
 {: .challenge}
 
@@ -378,17 +601,24 @@ observable = ak.flatten(trijet_mass)
 
 More information on this topic, including a very instructive video, can be found in one of the tutorials of the [IRIS-HEP AGC Tools 2021 Workshop](https://indico.cern.ch/event/1076231/timetable/?view=standard#12-histogramming-visualization).  We will not go into the details here, but just show you some examples.
 
-We will use `Hist` from the `hist` package.  
+We will use `Hist` from the [`hist`](https://hist.readthedocs.io/en/latest/) package.  
 
 
 So, now we have a flat array for our observable. What else do we need for plotting? Well, a histogram is essentially a way to reduce our data. We can't just plot every value of *trijet* mass, so we divide up our range of masses into n bins across some reasonable range. Thus, we need to define the mapping for our reduction; defining the number of bins and the range is sufficient for this. This is called a `Regular` axis in the `hist.Hist` package.
 
 In our case, let's plot 25 bins between values of 50 and 550. Because a histogram can contain an arbitrary amount of axes, we also need to give our axis a name (which becomes its reference in our code) and a label (which is the label on the axis that users see when the histogram is plotted).
 
-Since we will be using several datasets (for signal, background and collisions data) we need a wasy of keep these contributions separate in our histograms.  One can del with this using `Categorical` axes. A Categorical axis takes a name, a label, and a pre-defined list of categories.  Let's book a generic histogram with such capabilities:
+Since we will be using several datasets (for signal, background and collisions data) we need a way of keeping these contributions separate in our histograms.  One can do with this using `Categorical` axes. A Categorical axis takes a name, a label, and a pre-defined list of categories.  Let's book a generic histogram with such capabilities:
 
 ~~~
-histogram = hist.Hist.new.Reg(25, 50, 550, name="observable", label="observable [GeV]").StrCat(["4j1b", "4j2b"], name="region", label="Region").StrCat([], name="process", label="Process", growth=True).StrCat([], name="variation", label="Systematic variation", growth=True).Weight()        
+# This defines the histogram object, but doesn't actually fill it with the data.
+
+histogram = hist.Hist.new.Reg(25, 50, 550,
+                              name="observable", label="observable [GeV]")\
+                             .StrCat(["4j1b", "4j2b"], name="region", label="Region")\
+                             .StrCat([], name="process", label="Process", growth=True)\
+                             .StrCat([], name="variation", label="Systematic variation", growth=True)\
+                             .Weight()
 ~~~
 {: .language-python}
 
@@ -416,8 +646,10 @@ you will find
 It is useful at this point to do:
 
 ~~~
-histogram.ndim
-histogram.axes
+print(histogram.ndim)
+print()
+
+print(histogram.axes)
 ~~~
 {: .language-python}
 
@@ -691,22 +923,37 @@ It is here where you decide where to run.  Unfortunately, the datasets over whic
 
 Finally note that there are some *auxiliary functions* at the beginning of the `coffeaAnalysis_ttbarljets.py` file and some *histogramming* routines at the end.  We won't worry about them for now.
 
+> ## Stop Jupyter Lab
+> We're going to run a couple of commands now from the shell environment by calling some python scripts. So first, we need
+> to save our work and shutdown Jupyter Lab. 
+> 
+> Before saving our work, let's stop the kernel and clear the output. That way we won't save all the data *and* the notebook. 
+> 
+> Click on **Kernel** and then **Restart Kernel and Clear All Outputs**.
+> 
+> Then, click on **File** and then **Save Notebook**.
+> 
+> Then, click on **File** and then **Shut Down**.
+> You should now have your prompt back in the terminal with your Docker instance!
+{: .callout}
+
 ## Running an example of the analysis
 
 If you have a good connection you may get to run over just a single file per dataset by setting the `N_FILES_MAX_PER_SAMPLE = 1` at the beggining of the `coffeaAnalysis_ttbarljets.py` file.  Otherwise, do not worry we will provide you with the final `histograms.root` output after we ran over the whole dataset (for reference, it takes about 4 hours in a regular laptop).
 
-Let's run the demonstrator:
-
-~~~
-python coffeaAnalysis_ttbarljets.py
-~~~
-{: .language-bash}
-
-
-> ## While we wait, explore all these files
->
-> Feel free to take time to explore the files that complement the analysis infrastructure.  Ask a a question!
->
+> ## If you have time! (probably not right now)
+> Edit `coffeaAnalysis_ttbarljets.py` so that `N_FILES_MAX_PER_SAMPLE = 1` rather than `N_FILES_MAX_PER_SAMPLE = -1`.
+> And then run the demonstrator:
+> 
+> ~~~
+> cd /code/workshop2022-lesson-ttbarljetsanalysis-payload
+> 
+> python coffeaAnalysis_ttbarljets.py
+> ~~~
+> {: .language-bash}
+> 
+> This can take quite some time, even running over 1 file in each dataset, so you may want to do this on your own time
+> and not during the synchronous parts of this workshop. 
 {: .challenge}
 
 
@@ -714,7 +961,14 @@ python coffeaAnalysis_ttbarljets.py
 
 > ## Plotting the final results
 > 
-> [Here](https://cernbox.cern.ch/index.php/s/SPcoOLArZCFFupN) you can download a full `histograms.root`.  It was obtained after 4 hours of running on a single computer. Of course, if you have some available space, you could download the files (the size is not terribly large, maybe around 60GB or so), and run much faster. It contains all the histograms produced by the analysis Processor.  We have prepared a plotting script for you to see the results:
+> [Here](https://cernbox.cern.ch/index.php/s/SPcoOLArZCFFupN) you can download a full `histograms.root`. It was obtained after 4 hours of running on a single computer. 
+> When you click on the link, you'll be directed to [CERNBox](https://home.cern/news/announcement/cern/new-cernbox-user-interface), a tool to share large files, similar to DropBox. 
+> 
+> To download the file, click on the three (3) vertical dots by the `histograms.root` name in the tab near the top. Then select **Download**. 
+> 
+> When the file is downloaded, move it to to your `cms_open_data_python/workshop2022-lesson-ttbarljetsanalysis-payload` on your *local* laptop. Because this directory is mounted in your Docker container, you will be able to see this file in Docker. 
+>
+> Of course, if you have some available space, you could download the files (the size is not terribly large, maybe around 60GB or so), and run much faster. It contains all the histograms produced by the analysis Processor.  We have prepared a plotting script for you to see the results:
 >
 > ~~~
 > python plotme.py
@@ -723,5 +977,9 @@ python coffeaAnalysis_ttbarljets.py
 {: .challenge}
 
 ![](../assets/img/finalplot_ttbar.png){:width="60%"}
+
+Pretty good! The data *mostly* seems to match up with our assumptions about how much the different MC samples contribute, 
+but maybe we can do better if we allow for the fact that we may not know these values exactly. 
+In the next section, we'll try to use some inference tools to get a more precise description of the data!
 
 {% include links.md %}
