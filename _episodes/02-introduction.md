@@ -28,11 +28,10 @@ for the production of top-quark / anti-top-quark pairs in proton-proton collisio
 we measured the probability that a top-quark and an anti-top quark pair are produced when protons are collided
 at a center-of-mass energy of 13 TeV. 
 
-A set of summary slides are provided LINK_TO_BE_ADDED and you should make sure you go through them in full. 
 
 ![](../assets/img/ttbar_diagram.png){:width="50%"}.
 
-To go into a bit more detail (this will make sense if you go through the aforementioned slides)< 
+To go into a bit more detail  
 in this simplified analysis we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.
 The data are produced in proton-proton collisions at $$\sqrt{s}$$ = 13 TeV at the beginning of Run 2 of the LHC. We will be examining the lepton+jets final state
 $$
