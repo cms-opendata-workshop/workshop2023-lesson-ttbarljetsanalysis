@@ -306,7 +306,7 @@ Output Size: 15090
 > > print('Output Counts:', ak.sum(ak.num(jet_pt[jet_pt > 30], axis=1)))
 > > 
 > > print('Input Counts:', ak.num(jet_pt, axis=0))
-> > print('Output Counts:', ak.num(jet_pt[jet_pt > 30], axis=0)
+> > print('Output Counts:', ak.num(jet_pt[jet_pt > 30], axis=0))
 > > ~~~
 > > {: .language-python}
 > > 
