@@ -173,7 +173,7 @@ Let's open an example file. These are **flattened POET ntuples**.  As it was men
 Using `uproot`,
 
 ~~~
-events = uproot.open('root://eospublic.cern.ch//eos/opendata/cms/upload/od-workshop/ws2021/myoutput_odws2022-ttbaljets-prodv2.0_merged.root')['events']
+events = uproot.open('root://eospublic.cern.ch//eos/opendata/cms/upload/od-workshop/ws2021/myoutput_odws2022-ttbaljets-prodv2.0_merged.root')['events'])
 events
 ~~~
 {: .language-python}
