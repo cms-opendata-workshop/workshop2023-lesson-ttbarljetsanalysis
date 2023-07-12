@@ -39,6 +39,14 @@ t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu
 $$
 which is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
 
+## Slides
+
+We want to motivate why we are encouraging you to look into some of
+these newer software tools.
+Let's go through [these slides](https://docs.google.com/presentation/d/1Ph5SSUSQaUZqEpzGRqPA2iDIF0CsriSbJV2pS8P4BVQ/edit?usp=sharing)
+together to review this analysis and to get a more complete
+overview of what goes into an analysis. 
+
 
 
 ## Coding (python) introduction
@@ -499,7 +507,7 @@ NanoEvents can also impose other features, such as **cross-references** in our d
 ### Let's take a look at the agc_schema.py file
 Anyone, in principle, can write a schema that suits particular needs and that could be *plugged* into the coffea insfrastructure.  Here we present a challenge to give you a feeling of the kind of arrangements schemas can take care of.
 
-> ## **Challenge**: Adding the corrected jet energy to the LorentzVector
+> ## **Challenge**: Finding the corrected jet energy in the LorentzVector
 >
 > If you check the variables above, you will notice that the `jet` object has an energy `e` recorded but also, as you learn from the physics objects lesson, `corre`, which is the corrected energy.  You can also realize about this if you dump the fields for the jet:
 > 
@@ -508,15 +516,31 @@ Anyone, in principle, can write a schema that suits particular needs and that co
 > ~~~
 > {: .language-python}
 >
-> You should find that you can see the `corre` variable, but this should not happen because it should have been recorded as `energy` for the LorentzVector funcionality.
+> You should find that you can see the `corre` variable.
 > 
-> Inspect and study the file `agc_schema.py` to fix this problem and pass this `corre` energy as the energy to the LorentzVector and not the uncorrected `e` energy.  The changes for `_e` should remain valid for the rest of the objects though.  Note that you could correct for the `fatjet` also in the same line of action.
+> Inspect and study the file `agc_schema.py` to see how the `corre` energy was added as the energy to the LorentzVector and not the uncorrected `e` energy.  The changes for `_e` should remain valid for the rest of the objects though.  Note that you could correct for the `fatjet` also in the same line of action.
 >
-> In order to see the difference you need to reload the schema.  It may be necessary to rm the `__pycache__` directory in your area altogether.
->
-> > ## Solution
-> >
-> > You can download the solution from [here](https://raw.githubusercontent.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload/master/agc_schema.py)
-> {: .solution}
 {: .challenge}
 
+
+> ## Overnight challenge! Make your own plot!
+>
+> You've now seen how to make basic plots of the variables in these ROOT files, as well as how to mask
+> the data based on other variables. 
+> 
+> You are challenged to make at least one plot, making use of the data file and tools we
+> learned about in this lesson. It doesn't matter what it is...you can even just reproduce the plots
+> we asked you to make in this lesson. To save the plot, you'll want to add something like 
+> the following line of code after you make any of the plots.
+> 
+> ~~~
+> plt.savefig('my_plot.png')
+> ~~~
+> {: .language-python}
+> The figure will show up in the directory in both docker and on your local machine.
+> 
+> When you get the image, you can add it to [these Google Slides](https://docs.google.com/presentation/d/13KMlQPiC-ginTrMqUsziWI0lDOUHgwL7vDlkHIXBfWI/edit?usp=sharing). 
+> 
+> Good luck! And we'll pick this up tomorrow!
+>
+{: .challenge}
